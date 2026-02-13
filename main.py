@@ -1,36 +1,35 @@
 from src.loader import get_prepared_data
 from src.processor import find_missing_records
 from src.classifier import classify_missing_records
+from src.writer import save_to_excel
+from src.config import INPUT_PL_FILE
 
 def main():
     print("--- StartupCFO Tool ---")
     
-    # 1. Empiezo cargando los archivos Excel
+    # 1. Empiezo cargando y preparando los datos de los Excel
     input_df, mayor_df = get_prepared_data()
     
-    # Si tengo los dos dataframes puedo seguir
+    # Si todo se ha cargado bien, sigo adelante
     if input_df is not None and mayor_df is not None:
         
-        # 2. Busco las líneas que faltan en el InputPL
+        # 2. Comparo para ver qué movimientos faltan en el histórico
         new_movements = find_missing_records(input_df, mayor_df)
         
-        # Si he encontrado cosas nuevas, las clasifico
+        # Si hay algo nuevo, me pongo manos a la obra
         if new_movements is not None and len(new_movements) > 0:
             
-            # 3. Clasifico los gastos aprendiendo del pasado
+            # 3. Clasifico los gastos usando lógica fuzzy (IA sencillita)
             classified_df = classify_missing_records(new_movements, input_df)
             
-            # Muestro un pequeño resumen por consola para ver que tal
-            print(f"[DEBUG] Ready to insert {len(classified_df)} classified movements.")
-            
-            # Si quieres ver una muestra de los resultados:
-            # print(classified_df[['Concepto', 'Tipo de gasto', 'Confidence']].head())
+            # 4. Por último, inyecto los nuevos datos en el Excel final
+            save_to_excel(classified_df, INPUT_PL_FILE)
             
         else:
-            print("[INFO] No new records found to add.")
+            print("[INFO] No new records found to add. Everything is up to date!")
             
     else:
-        print("[ERROR] Could not load all required files.")
+        print("[ERROR] Flow stopped because of missing or corrupt files.")
 
     print("----------------------------------")
 

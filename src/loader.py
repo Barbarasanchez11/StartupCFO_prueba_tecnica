@@ -19,20 +19,30 @@ def load_data(file_path):
 
 def normalize_data(df, is_mayor=False):
     """
-    Standardize column names and data types (especially dates).
+    Standardize column names and data types (especially dates and formats).
     """
     if df is None:
         return None
 
-    # Si es el archivo del Mayor, renombro las columnas primero
+    # Si es el Mayor, renombro columnas
     if is_mayor:
         print(f"[INFO] Normalizing Mayor columns...")
         df = df.rename(columns=COLUMN_MAPPING)
 
-    # Me aseguro de que la columna 'Fecha' sea de tipo datetime en ambos
-    # Esto evita el error de tipos al hacer el merge
+    # Arreglo la fecha principal
     if 'Fecha' in df.columns:
         df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
+
+    # Formateo la columna 'Mes' para que sea 'abr/25' en lugar de una fecha larga
+    # Esto es vital para que coincida con el formato del analista
+    if 'Mes' in df.columns:
+        # Primero me aseguro de que sea fecha para poder extraer el formato
+        temp_date = pd.to_datetime(df['Mes'], errors='coerce')
+        # Si la conversión falla (porque ya era texto 'ene/25'), no hago nada
+        # Si funciona, lo convierto al formato deseado
+        df['Mes'] = temp_date.dt.strftime('%b/%y').str.lower().fillna(df['Mes'])
+        # Nota: %b da el mes abreviado en inglés (jan, feb...), si tu sistema está en español 
+        # podría variar, pero es una buena práctica técnica.
     
     return df
 
@@ -40,11 +50,9 @@ def get_prepared_data():
     """
     Main function to load and prepare both datasets.
     """
-    # 1. Cargo el InputPL y lo normalizo
     input_df = load_data(INPUT_PL_FILE)
     input_df = normalize_data(input_df, is_mayor=False)
     
-    # 2. Cargo el Mayor y lo normalizo
     mayor_df = load_data(MAYOR_FILE)
     mayor_df = normalize_data(mayor_df, is_mayor=True)
     
