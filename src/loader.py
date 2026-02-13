@@ -33,16 +33,21 @@ def normalize_data(df, is_mayor=False):
     if 'Fecha' in df.columns:
         df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
 
+    # Diccionario para traducir los meses al español (el estilo del analista)
+    month_translation = {
+        1: 'ene', 2: 'feb', 3: 'mar', 4: 'abr', 5: 'may', 6: 'jun',
+        7: 'jul', 8: 'ago', 9: 'sep', 10: 'oct', 11: 'nov', 12: 'dic'
+    }
+
     # Formateo la columna 'Mes' para que sea 'abr/25' en lugar de una fecha larga
-    # Esto es vital para que coincida con el formato del analista
     if 'Mes' in df.columns:
-        # Primero me aseguro de que sea fecha para poder extraer el formato
         temp_date = pd.to_datetime(df['Mes'], errors='coerce')
-        # Si la conversión falla (porque ya era texto 'ene/25'), no hago nada
-        # Si funciona, lo convierto al formato deseado
-        df['Mes'] = temp_date.dt.strftime('%b/%y').str.lower().fillna(df['Mes'])
-        # Nota: %b da el mes abreviado en inglés (jan, feb...), si tu sistema está en español 
-        # podría variar, pero es una buena práctica técnica.
+        mask = temp_date.notna()
+        if mask.any():
+            # Aplico mi traduccion personalizada
+            df.loc[mask, 'Mes'] = temp_date[mask].apply(
+                lambda x: f"{month_translation[x.month]}/{str(x.year)[2:]}"
+            )
     
     return df
 
