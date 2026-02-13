@@ -15,7 +15,7 @@ def find_missing_records(input_df, mayor_df):
     print(f"[INFO] Comparing records using identifiers: {UNIQUE_IDENTIFIERS}")
 
     # 'merge' (como un BUSCARV) para cruzar las dos tablas.
-    # El indicator=True me crea una columna que me dice de dónde viene cada fila.
+    # El indicator=True me crea una columna que me dice de donde viene cada fila.
     comparison_df = pd.merge(
         mayor_df, 
         input_df[UNIQUE_IDENTIFIERS], 
@@ -33,6 +33,6 @@ def find_missing_records(input_df, mayor_df):
     # Limpio las posibles filas que digan 'END', que no son movimientos reales
     missing_records = missing_records[missing_records['Nº Asiento'] != 'END']
 
-    print(f"[SUCCESS] He terminado la comparación. He encontrado {len(missing_records)} registros nuevos.")
+    print(f"[SUCCESS] Comparison finished. Found {len(missing_records)} new records.")
     
     return missing_records
