@@ -1,1 +1,1 @@
-# StarupCFO_prueba_tecnica
+# StartupCFO_prueba_tecnica
