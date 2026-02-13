@@ -48,6 +48,13 @@ def normalize_data(df, is_mayor=False):
             df.loc[mask, 'Mes'] = temp_date[mask].apply(
                 lambda x: f"{month_translation[x.month]}/{str(x.year)[2:]}"
             )
+
+    # Redondeo las columnas numericas a 2 decimales para que se vea limpio
+    numeric_cols = ['Debe', 'Haber', 'Saldo', 'Neto']
+    for col in numeric_cols:
+        if col in df.columns:
+            # Convierto a numero por si acaso y redondeo
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).round(2)
     
     return df
 
