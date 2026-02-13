@@ -54,6 +54,10 @@ def save_to_excel(classified_df, template_path):
                 # Meto el valor en la celda
                 cell = sheet.cell(row=current_row, column=col_idx, value=cell_value)
                 
+                # Formateo la fecha para que no salgan las horas (0:00:00)
+                if col_name == 'Fecha':
+                    cell.number_format = 'DD/MM/YYYY'
+                
                 # Si la confianza es bajita, lo pinto de amarillo para avisar
                 if row_data.get('Confidence', 100) < 80:
                     cell.fill = warning_fill
