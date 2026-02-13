@@ -1,13 +1,13 @@
 from src.loader import get_prepared_data
+from src.processor import find_missing_records
 
 def main():
-    print("--- Startup CFO Automation Tool ---")
+    print("--- StartupCFO Tool ---")
     
-    # Step 1: Loading and Normalizing data
-    # We call the function from loader.py
+    # Cargo los datos de los dos Excel
     input_df, mayor_df = get_prepared_data()
     
-    # Quick check: How do our dataframes look?
+   
     if input_df is not None:
         print("[DEBUG] InputPL is ready in memory.")
     else:
@@ -18,8 +18,7 @@ def main():
     else:
         print("[DEBUG] Mayor is missing (Expected for now).")
 
-    print("-----------------------------------")
-    print("End of data loading step.")
+    print("-------------------------------------------")
 
 if __name__ == "__main__":
     main()
