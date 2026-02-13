@@ -41,6 +41,8 @@ def normalize_data(df, is_mayor=False):
 
     # Formateo la columna 'Mes' para que sea 'abr/25' en lugar de una fecha larga
     if 'Mes' in df.columns:
+        # Forzamos a que sea tipo 'object' (texto) para no tener errores de tipo
+        df['Mes'] = df['Mes'].astype(object)
         temp_date = pd.to_datetime(df['Mes'], errors='coerce')
         mask = temp_date.notna()
         if mask.any():
