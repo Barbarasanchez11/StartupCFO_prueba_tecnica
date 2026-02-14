@@ -43,3 +43,21 @@ Sigue los pasos a continuación para actualizar tu histórico y clasificar nuevo
 
 st.divider()
 
+col1, col2 = st.columns(2)
+
+with col1:
+    st.write("### 1. InputPL")
+    input_file = st.file_uploader("Sube el archivo de entrada", type=['xlsx'], key="input")
+
+with col2:
+    st.write("### 2. Mayor")
+    mayor_file = st.file_uploader("Sube el histórico del Mayor", type=['xlsx'], key="mayor")
+
+st.divider()
+
+if st.button(" Ejecutar Proceso"):
+    if input_file and mayor_file:
+        st.success("Archivos cargados correctamente. ¡Listo para procesar!")
+        # Aquí conectaremos con la lógica en el siguiente paso
+    else:
+        st.warning("Por favor, sube ambos archivos para continuar.")
