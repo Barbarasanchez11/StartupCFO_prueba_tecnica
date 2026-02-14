@@ -67,40 +67,46 @@ if st.button(" Ejecutar Proceso"):
         status = st.empty()
         
         # 1. Carga y Normalización
-        status.info("⏳ Paso 1: Cargando y normalizando datos...")
+        status.info(" Paso 1: Cargando y normalizando datos...")
         input_df, mayor_df = get_prepared_data(input_file, mayor_file)
         
         if input_df is not None and mayor_df is not None:
             
             # 2. Comparación
-            status.info("⏳ Paso 2: Buscando registros faltantes en el histórico...")
+            status.info(" Paso 2: Buscando registros faltantes en el histórico...")
             new_movements = find_missing_records(input_df, mayor_df)
             
             if new_movements is not None and len(new_movements) > 0:
-                st.write(f"✅ Se han encontrado **{len(new_movements)}** nuevos movimientos.")
+                st.success(f" **Análisis finalizado:** Se han detectado **{len(new_movements)}** movimientos nuevos en el Mayor que no estaban en el InputPL.")
                 
                 # 3. Clasificación
-                status.info("⏳ Paso 3: Clasificando nuevos gastos (IA Fuzzy Logic)...")
+                status.info(" Paso 3: Clasificando nuevos gastos (IA Fuzzy Logic)...")
                 classified_df = classify_missing_records(new_movements, input_df)
                 
-                # Vista previa de lo nuevo
-                st.write("**Vista previa de los registros clasificados:**")
-                st.dataframe(classified_df.head(10))
+                # Vista completa de lo nuevo
+                st.write("###  Nuevos registros clasificados")
+                st.info("A continuación se muestran solo los registros que se van a añadir al archivo final:")
+                st.dataframe(classified_df, use_container_width=True)
                 
                 # 4. Escritura
-                status.info("⏳ Paso 4: Generando archivo Excel con formato...")
+                status.info(" Paso 4: Generando archivo Excel con formato...")
                 # Usamos el archivo de entrada como plantilla directamente
                 save_to_excel(classified_df, input_file)
                 
-                status.success("🚀 ¡Proceso completado con éxito!")
+                status.success(" ¡Todo listo! El histórico ha sido actualizado.")
+                
+                st.markdown("---")
+                st.write("### Descarga de resultados")
+                st.write("El siguiente botón generará el archivo **InputPL completo**, incluyendo los datos originales y estos nuevos registros clasificados en su lugar correspondiente.")
                 
                 # 5. Botón de Descarga
                 with open(OUTPUT_FILE, "rb") as file:
                     st.download_button(
-                        label="📥 Descargar Excel Actualizado",
+                        label="Descargar Excel Actualizado (.xlsx)",
                         data=file,
                         file_name="InputPL_Actualizado.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True
                     )
             else:
                 status.warning("No hay registros nuevos que añadir. El histórico ya está actualizado.")
