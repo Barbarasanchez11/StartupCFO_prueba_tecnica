@@ -55,9 +55,56 @@ with col2:
 
 st.divider()
 
+from src.loader import get_prepared_data
+from src.processor import find_missing_records
+from src.classifier import classify_missing_records
+from src.writer import save_to_excel
+from src.config import OUTPUT_FILE
+
 if st.button(" Ejecutar Proceso"):
     if input_file and mayor_file:
-        st.success("Archivos cargados correctamente. ¡Listo para procesar!")
-        # Aquí conectaremos con la lógica en el siguiente paso
+        # Contenedor para ir mostrando el progreso
+        status = st.empty()
+        
+        # 1. Carga y Normalización
+        status.info("⏳ Paso 1: Cargando y normalizando datos...")
+        input_df, mayor_df = get_prepared_data(input_file, mayor_file)
+        
+        if input_df is not None and mayor_df is not None:
+            
+            # 2. Comparación
+            status.info("⏳ Paso 2: Buscando registros faltantes en el histórico...")
+            new_movements = find_missing_records(input_df, mayor_df)
+            
+            if new_movements is not None and len(new_movements) > 0:
+                st.write(f"✅ Se han encontrado **{len(new_movements)}** nuevos movimientos.")
+                
+                # 3. Clasificación
+                status.info("⏳ Paso 3: Clasificando nuevos gastos (IA Fuzzy Logic)...")
+                classified_df = classify_missing_records(new_movements, input_df)
+                
+                # Vista previa de lo nuevo
+                st.write("**Vista previa de los registros clasificados:**")
+                st.dataframe(classified_df.head(10))
+                
+                # 4. Escritura
+                status.info("⏳ Paso 4: Generando archivo Excel con formato...")
+                # Usamos el archivo de entrada como plantilla directamente
+                save_to_excel(classified_df, input_file)
+                
+                status.success("🚀 ¡Proceso completado con éxito!")
+                
+                # 5. Botón de Descarga
+                with open(OUTPUT_FILE, "rb") as file:
+                    st.download_button(
+                        label="📥 Descargar Excel Actualizado",
+                        data=file,
+                        file_name="InputPL_Actualizado.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+            else:
+                status.warning("No hay registros nuevos que añadir. El histórico ya está actualizado.")
+        else:
+            status.error("Error crítico al procesar los archivos. Por favor, revisa el formato de los Excel.")
     else:
         st.warning("Por favor, sube ambos archivos para continuar.")

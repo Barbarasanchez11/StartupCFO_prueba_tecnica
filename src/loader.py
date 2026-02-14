@@ -1,17 +1,21 @@
 import pandas as pd
 from src.config import INPUT_PL_FILE, MAYOR_FILE, COLUMN_MAPPING
 
-def load_data(file_path):
+def load_data(file_source):
     """
-    Generic function to load an Excel file.
+    Generic function to load an Excel file from a path or a file-like object.
     """
     try:
-        print(f"[INFO] Reading file: {file_path}")
-        df = pd.read_excel(file_path, engine='openpyxl')
-        print(f"[SUCCESS] Loaded {len(df)} rows from {file_path}")
+        if isinstance(file_source, str):
+            print(f"[INFO] Reading file from path: {file_source}")
+        else:
+            print(f"[INFO] Reading file from upload buffer")
+            
+        df = pd.read_excel(file_source, engine='openpyxl')
+        print(f"[SUCCESS] Loaded {len(df)} rows")
         return df
     except FileNotFoundError:
-        print(f"[ERROR] File not found: {file_path}. Please check the data folder.")
+        print(f"[ERROR] File not found: {file_source}")
         return None
     except Exception as e:
         print(f"[ERROR] An unexpected error occurred: {e}")
@@ -60,14 +64,15 @@ def normalize_data(df, is_mayor=False):
     
     return df
 
-def get_prepared_data():
+def get_prepared_data(input_source=INPUT_PL_FILE, mayor_source=MAYOR_FILE):
     """
     Main function to load and prepare both datasets.
+    Accepts paths or file-like objects.
     """
-    input_df = load_data(INPUT_PL_FILE)
+    input_df = load_data(input_source)
     input_df = normalize_data(input_df, is_mayor=False)
     
-    mayor_df = load_data(MAYOR_FILE)
+    mayor_df = load_data(mayor_source)
     mayor_df = normalize_data(mayor_df, is_mayor=True)
     
     return input_df, mayor_df
