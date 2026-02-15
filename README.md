@@ -58,6 +58,7 @@ graph TD
 - **TheFuzz**: Coincidencia difusa de texto para la sugerencia de categorías de gastos.
 - **Openpyxl**: Manipulación de Excel a bajo nivel para preservar los estilos y diseños originales del documento.
 - **Pytest**: Framework de testing para pruebas unitarias y cobertura de código.
+- **Rich**: Librería para mejorar la presentación en terminal con colores y formato avanzado.
 
 ---
 
@@ -72,6 +73,7 @@ StartupCFO_prueba_tecnica/
 │   ├── classifier.py   # Lógica de clasificación por IA (Fuzzy Logic)
 │   ├── config.py       # Configuraciones globales y mapeos
 │   ├── loader.py       # Carga de datos y normalización (Ruta/Buffer)
+│   ├── logger.py       # Sistema de logging con colores para terminal
 │   ├── processor.py    # Comparación y detección de diferencias
 │   └── writer.py       # Formato de Excel e inyección de datos
 ├── data/
@@ -266,3 +268,61 @@ tests/
 ```
 
 Para más información sobre los tests, consulta [`tests/README.md`](tests/README.md).
+
+---
+
+## 📝 Sistema de Logging
+
+El proyecto incluye un sistema de logging estructurado con salida coloreada para mejorar la experiencia de usuario en la terminal.
+
+### Características
+
+- **Colores por nivel de log**: 
+  - 🔵 **INFO**: Mensajes informativos (azul)
+  - 🟢 **SUCCESS**: Operaciones exitosas (verde)
+  - 🟡 **WARNING**: Advertencias (amarillo)
+  - 🔴 **ERROR**: Errores críticos (rojo)
+  - 🔵 **DEBUG**: Información de depuración (cyan)
+
+- **Integración con Rich**: Si la librería `rich` está instalada, el sistema utiliza formateo avanzado con:
+  - Timestamps formateados
+  - Tracebacks mejorados
+  - Markup support
+  - Mejor presentación visual
+
+- **Fallback automático**: Si `rich` no está disponible, el sistema utiliza colores ANSI básicos para mantener la funcionalidad.
+
+### Uso en el Código
+
+```python
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
+logger.info("Mensaje informativo")
+logger.success("Operación completada exitosamente")
+logger.warning("Advertencia: datos potencialmente problemáticos")
+logger.error("Error crítico en el proceso")
+```
+
+### Visualización en Terminal
+
+Cuando ejecutas `python main.py`, verás mensajes formateados con colores que facilitan la identificación rápida del tipo de información:
+
+```
+[INFO] Reading file from path: data/raw/InputPL.xlsx
+[SUCCESS] Loaded 150 rows
+[INFO] Comparing records using identifiers: ['Nº Asiento', 'Fecha', 'Saldo']
+[SUCCESS] Comparison finished. Found 25 new records.
+```
+
+### Configuración
+
+El sistema de logging se configura automáticamente al importar `get_logger`. Para personalizar el nivel de logging o desactivar Rich, puedes usar `setup_logger` directamente:
+
+```python
+from src.logger import setup_logger
+import logging
+
+logger = setup_logger("MiLogger", level=logging.DEBUG, use_rich=False)
+```
