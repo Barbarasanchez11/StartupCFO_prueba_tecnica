@@ -45,9 +45,29 @@ def normalize_data(df, is_mayor=False):
         print(f"[INFO] Normalizing Mayor columns...")
         df = df.rename(columns=COLUMN_MAPPING)
 
-    # Arreglo la fecha principal
+    # Arreglo la fecha principal con detección de errores
     if 'Fecha' in df.columns:
-        df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
+        # Intentamos la conversión
+        temp_fecha = pd.to_datetime(df['Fecha'], errors='coerce')
+        
+        # Identificamos filas donde la conversión falló (pero no estaban vacías originalmente)
+        invalid_dates = temp_fecha.isna() & df['Fecha'].notna()
+        
+        if invalid_dates.any():
+            bad_rows = df.index[invalid_dates].tolist()
+            # Calculamos la fila real de Excel (index 0 de pandas es fila 2 del Excel normalmente)
+            excel_rows = [i + 2 for i in bad_rows]
+            example_val = df.loc[bad_rows[0], 'Fecha']
+            file_label = "Mayor" if is_mayor else "InputPL"
+            
+            raise ValueError(
+                f" **Error de Formato en {file_label}**: Se han encontrado fechas ilegibles.\n\n"
+                f"**Filas conflictivas (en Excel):** {excel_rows[:10]}{'...' if len(excel_rows) > 10 else ''}\n"
+                f"**Ejemplo de valor incorrecto:** '{example_val}'\n\n"
+                f"Por favor, asegúrate de que todas las celdas de la columna 'Fecha' tengan un formato válido (DD/MM/YYYY)."
+            )
+        
+        df['Fecha'] = temp_fecha
 
     # Diccionario para traducir los meses al español (el estilo del analista)
     month_translation = {

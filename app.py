@@ -90,7 +90,7 @@ if st.button(" Ejecutar Proceso"):
                 # Vista completa de lo nuevo
                 st.write("###  Nuevos registros clasificados")
                 st.info("A continuación se muestran solo los registros que se van a añadir al archivo final:")
-                st.dataframe(classified_df, use_container_width=True)
+                st.dataframe(classified_df, width='stretch')
                 
                 # 4. Escritura
                 status.info(" Paso 4: Generando archivo Excel con formato...")
@@ -110,7 +110,7 @@ if st.button(" Ejecutar Proceso"):
                         data=file,
                         file_name="InputPL_Actualizado.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True
+                        width='stretch'
                     )
             else:
                 status.warning("No hay registros nuevos que añadir. El histórico ya está actualizado.")
