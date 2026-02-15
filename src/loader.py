@@ -76,14 +76,12 @@ def normalize_data(df, is_mayor=False):
         7: 'jul', 8: 'ago', 9: 'sep', 10: 'oct', 11: 'nov', 12: 'dic'
     }
 
-    # Formateo la columna 'Mes' para que sea 'abr/25' en lugar de una fecha larga
-    if 'Mes' in df.columns:
-        # Forzamos a que sea tipo 'object' (texto) para no tener errores de tipo
-        df['Mes'] = df['Mes'].astype(object)
-        temp_date = pd.to_datetime(df['Mes'], errors='coerce')
+    # Si tenemos Fecha, el Mes debe ser derivado de ella para evitar errores (como el famoso dic/99)
+    if 'Fecha' in df.columns:
+        # Nos aseguramos de que sea datetime
+        temp_date = pd.to_datetime(df['Fecha'], errors='coerce')
         mask = temp_date.notna()
         if mask.any():
-            # Aplico mi traduccion personalizada
             df.loc[mask, 'Mes'] = temp_date[mask].apply(
                 lambda x: f"{month_translation[x.month]}/{str(x.year)[2:]}"
             )

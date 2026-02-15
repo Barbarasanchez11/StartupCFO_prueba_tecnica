@@ -44,7 +44,8 @@ def save_to_excel(classified_df, template_path):
         
         # Voy columna por columna según mi configuración
         for col_idx, col_name in enumerate(INPUT_PL_COLS, start=1):
-            if col_name in row_data:
+            # No escribimos en la columna 'END' (es solo un marcador visual) ni si el dato falta
+            if col_name in row_data and col_name != "END":
                 cell_value = row_data[col_name]
                 
                 # Si es una fecha la convierto para que Excel no se vuelva loco
