@@ -70,21 +70,75 @@ def normalize_data(df, is_mayor=False):
         
         df['Fecha'] = temp_fecha
 
-    # Diccionario para traducir los meses al español (el estilo del analista)
+    # Diccionario para traducir los meses al español
     month_translation = {
         1: 'ene', 2: 'feb', 3: 'mar', 4: 'abr', 5: 'may', 6: 'jun',
         7: 'jul', 8: 'ago', 9: 'sep', 10: 'oct', 11: 'nov', 12: 'dic'
     }
 
-    # Si tenemos Fecha, el Mes debe ser derivado de ella para evitar errores (como el famoso dic/99)
-    if 'Fecha' in df.columns:
-        # Nos aseguramos de que sea datetime
-        temp_date = pd.to_datetime(df['Fecha'], errors='coerce')
-        mask = temp_date.notna()
-        if mask.any():
-            df.loc[mask, 'Mes'] = temp_date[mask].apply(
-                lambda x: f"{month_translation[x.month]}/{str(x.year)[2:]}"
-            )
+    # 🔧 FUNCIÓN HELPER: Formatea fecha a "mes/año"
+    def format_month_year(date_value):
+        """Convierte una fecha a formato 'ene/25', 'feb/25', etc."""
+        if pd.isna(date_value):
+            return None
+        try:
+            if hasattr(date_value, 'month') and hasattr(date_value, 'year'):
+                return f"{month_translation[date_value.month]}/{str(date_value.year)[2:]}"
+        except (KeyError, AttributeError):
+            pass
+        return None
+
+    # 🔧 NUEVA LÓGICA: Procesar columna 'Mes' de forma completa
+    if 'Mes' in df.columns:
+        print(f"[INFO] Processing 'Mes' column...")
+        
+        # Forzar tipo object para trabajar con strings y fechas
+        df['Mes'] = df['Mes'].astype(object)
+        
+        # PASO 1: Intentar parsear valores existentes en 'Mes' como fechas
+        temp_mes_date = pd.to_datetime(df['Mes'], errors='coerce')
+        mask_valid_from_mes = temp_mes_date.notna()
+        
+        # Si algunos valores de 'Mes' son fechas válidas, formatearlos
+        if mask_valid_from_mes.any():
+            df.loc[mask_valid_from_mes, 'Mes'] = temp_mes_date[mask_valid_from_mes].apply(format_month_year)
+        
+        # PASO 2: Para los valores que NO se pudieron formatear, derivarlos de 'Fecha'
+        # Identificar celdas vacías, None, o inválidas en 'Mes'
+        mask_needs_fecha_derivation = (
+            ~mask_valid_from_mes |  # No se pudo parsear de 'Mes'
+            df['Mes'].isna() |  # Es NaN
+            (df['Mes'].astype(str).str.strip() == '') |  # String vacío
+            (df['Mes'].astype(str).str.strip() == 'None') |  # String "None"
+            (df['Mes'].astype(str).str.strip() == 'nan')  # String "nan"
+        )
+        
+        if mask_needs_fecha_derivation.any() and 'Fecha' in df.columns:
+            print(f"[INFO] Deriving {mask_needs_fecha_derivation.sum()} 'Mes' values from 'Fecha' column...")
+            
+            # Usar la columna 'Fecha' (ya normalizada como datetime)
+            fecha_values = df.loc[mask_needs_fecha_derivation, 'Fecha']
+            formatted_from_fecha = fecha_values.apply(format_month_year)
+            
+            # Actualizar solo donde 'Fecha' tiene un valor válido
+            valid_fecha_mask = formatted_from_fecha.notna()
+            if valid_fecha_mask.any():
+                # Crear índice combinado: mask_needs_fecha_derivation Y valid_fecha_mask
+                final_mask = mask_needs_fecha_derivation.copy()
+                final_mask[mask_needs_fecha_derivation] = valid_fecha_mask
+                
+                df.loc[final_mask, 'Mes'] = formatted_from_fecha[valid_fecha_mask].values
+        
+        # PASO 3: Limpiar valores residuales (None, nan, etc.) → string vacío
+        cleanup_mask = (
+            df['Mes'].isna() | 
+            (df['Mes'].astype(str).str.strip() == 'None') |
+            (df['Mes'].astype(str).str.strip() == 'nan')
+        )
+        if cleanup_mask.any():
+            df.loc[cleanup_mask, 'Mes'] = ''
+        
+        print(f"[SUCCESS] 'Mes' column processed successfully.")
 
     # Redondeo las columnas numericas a 2 decimales para que se vea limpio
     numeric_cols = ['Debe', 'Haber', 'Saldo', 'Neto']
