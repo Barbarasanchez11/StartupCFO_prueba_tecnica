@@ -1,5 +1,8 @@
 import pandas as pd
 from src.config import INPUT_PL_FILE, MAYOR_FILE, COLUMN_MAPPING, INPUT_PL_COLS, UNIQUE_IDENTIFIERS
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 def validate_columns(df, required_cols, file_label):
     """
@@ -19,18 +22,18 @@ def load_data(file_source):
     """
     try:
         if isinstance(file_source, str):
-            print(f"[INFO] Reading file from path: {file_source}")
+            logger.info(f"Reading file from path: {file_source}")
         else:
-            print(f"[INFO] Reading file from upload buffer")
+            logger.info("Reading file from upload buffer")
             
         df = pd.read_excel(file_source, engine='openpyxl')
-        print(f"[SUCCESS] Loaded {len(df)} rows")
+        logger.success(f"Loaded {len(df)} rows")
         return df
     except FileNotFoundError:
-        print(f"[ERROR] File not found: {file_source}")
+        logger.error(f"File not found: {file_source}")
         return None
     except Exception as e:
-        print(f"[ERROR] An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")
         return None
 
 def normalize_data(df, is_mayor=False):
@@ -42,7 +45,7 @@ def normalize_data(df, is_mayor=False):
 
     # Si es el Mayor, renombro columnas
     if is_mayor:
-        print(f"[INFO] Normalizing Mayor columns...")
+        logger.info("Normalizing Mayor columns...")
         df = df.rename(columns=COLUMN_MAPPING)
 
     # Arreglo la fecha principal con detección de errores
@@ -90,7 +93,7 @@ def normalize_data(df, is_mayor=False):
 
     # 🔧 NUEVA LÓGICA: Procesar columna 'Mes' de forma completa
     if 'Mes' in df.columns:
-        print(f"[INFO] Processing 'Mes' column...")
+        logger.info("Processing 'Mes' column...")
         
         # Forzar tipo object para trabajar con strings y fechas
         df['Mes'] = df['Mes'].astype(object)
@@ -114,7 +117,7 @@ def normalize_data(df, is_mayor=False):
         )
         
         if mask_needs_fecha_derivation.any() and 'Fecha' in df.columns:
-            print(f"[INFO] Deriving {mask_needs_fecha_derivation.sum()} 'Mes' values from 'Fecha' column...")
+            logger.info(f"Deriving {mask_needs_fecha_derivation.sum()} 'Mes' values from 'Fecha' column...")
             
             # Usar la columna 'Fecha' (ya normalizada como datetime)
             fecha_values = df.loc[mask_needs_fecha_derivation, 'Fecha']
@@ -138,7 +141,7 @@ def normalize_data(df, is_mayor=False):
         if cleanup_mask.any():
             df.loc[cleanup_mask, 'Mes'] = ''
         
-        print(f"[SUCCESS] 'Mes' column processed successfully.")
+        logger.success("'Mes' column processed successfully.")
 
     # Redondeo las columnas numericas a 2 decimales para que se vea limpio
     numeric_cols = ['Debe', 'Haber', 'Saldo', 'Neto']

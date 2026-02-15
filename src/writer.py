@@ -2,6 +2,9 @@ import openpyxl
 from openpyxl.styles import PatternFill
 import os
 from src.config import OUTPUT_FILE, INPUT_PL_FILE, INPUT_PL_COLS
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 def save_to_excel(classified_df, template_path, input_df=None):
     """
@@ -9,12 +12,12 @@ def save_to_excel(classified_df, template_path, input_df=None):
     If input_df is provided, also rewrite existing rows to fix corrupted values.
     """
     if classified_df is None or len(classified_df) == 0:
-        print("[INFO] No data to write.")
+        logger.info("No data to write.")
         return
 
     # 1. Abro el Excel original que me sirve de plantilla
 
-    print(f"[INFO] Opening template: {template_path}")
+    logger.info(f"Opening template: {template_path}")
     wb = openpyxl.load_workbook(template_path, data_only=True, keep_vba=False)
     sheet = wb.active
 
@@ -30,7 +33,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
     if not end_rows:
         end_row = sheet.max_row + 1
         first_end_row = end_row
-        print("[WARNING] Could not find 'END' row. Writing at the end of the sheet.")
+        logger.warning("Could not find 'END' row. Writing at the end of the sheet.")
     else:
         # Uso la PRIMERA fila END como punto de inserción (donde empiezan los datos nuevos)
         first_end_row = min(end_rows)
@@ -38,17 +41,17 @@ def save_to_excel(classified_df, template_path, input_df=None):
         
         # Si hay múltiples filas END, elimino las intermedias y la última, dejando solo la primera
         if len(end_rows) > 1:
-            print(f"[INFO] Found {len(end_rows)} 'END' rows. Removing all except the first one at row {first_end_row}.")
+            logger.info(f"Found {len(end_rows)} 'END' rows. Removing all except the first one at row {first_end_row}.")
             # Elimino todas las filas END excepto la primera (de mayor a menor para no afectar los índices)
             for row_to_delete in sorted(end_rows[1:], reverse=True):
                 sheet.delete_rows(row_to_delete)
-            print(f"[INFO] Cleaned up. Using 'END' at row {end_row} as insertion point.")
+            logger.info(f"Cleaned up. Using 'END' at row {end_row} as insertion point.")
         else:
-            print(f"[INFO] Found 'END' at row {end_row}. Inserting {len(classified_df)} rows...")
+            logger.info(f"Found 'END' at row {end_row}. Inserting {len(classified_df)} rows...")
     
    
     if input_df is not None and first_end_row > 2:  # first_end_row > 2 porque fila 1 es header
-        print(f"[INFO] Fixing existing rows (1 to {first_end_row-1}) from normalized DataFrame...")
+        logger.info(f"Fixing existing rows (1 to {first_end_row-1}) from normalized DataFrame...")
         # Reescribir filas existentes desde el DataFrame normalizado (que tiene valores correctos)
         # IMPORTANTE: Solo reescribir hasta la PRIMERA fila END, y excluir filas END del DataFrame
         for df_idx, (_, row_data) in enumerate(input_df.iterrows(), start=2):  # start=2 porque fila 1 es header
@@ -89,7 +92,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
     if end_row_after_insert <= sheet.max_row:
         cell_val_after = str(sheet.cell(row=end_row_after_insert, column=1).value).strip().upper()
         if cell_val_after == 'END':
-            print(f"[INFO] Removing intermediate 'END' row at {end_row_after_insert} (now in the middle after insertion).")
+            logger.info(f"Removing intermediate 'END' row at {end_row_after_insert} (now in the middle after insertion).")
             sheet.delete_rows(end_row_after_insert)
 
     # 4. Empiezo a rellenar SOLO las nuevas filas insertadas (no toco las existentes)
@@ -140,6 +143,6 @@ def save_to_excel(classified_df, template_path, input_df=None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    print(f"[INFO] Saving results to: {OUTPUT_FILE}")
+    logger.info(f"Saving results to: {OUTPUT_FILE}")
     wb.save(OUTPUT_FILE)
-    print("[SUCCESS] Process completed! Check the output folder.")
+    logger.success("Process completed! Check the output folder.")

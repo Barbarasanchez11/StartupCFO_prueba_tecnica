@@ -3,15 +3,21 @@ from src.processor import find_missing_records
 from src.classifier import classify_missing_records
 from src.writer import save_to_excel
 from src.config import INPUT_PL_FILE
+from src.logger import setup_logger
+
+# Set up logger for main
+logger = setup_logger("StartupCFO", use_rich=True)
 
 def main():
-    print("--- StartupCFO Tool ---")
+    logger.info("=" * 50)
+    logger.info("StartupCFO Tool - Accounting Reconciliation")
+    logger.info("=" * 50)
     
     # 1. Empiezo cargando y preparando los datos de los Excel
     try:
         input_df, mayor_df = get_prepared_data()
     except ValueError as e:
-        print(f"[ERROR] {e}")
+        logger.error(f"{e}")
         return
 
     # Si todo se ha cargado bien, sigo adelante
@@ -20,15 +26,15 @@ def main():
         from src.validator import audit_data_quality
         all_warnings = audit_data_quality(input_df, "InputPL") + audit_data_quality(mayor_df, "Mayor")
         if all_warnings:
-            print("\n[WARNING] Se han detectado problemas de calidad en los datos:")
+            logger.warning("\nSe han detectado problemas de calidad en los datos:")
             for warning in all_warnings:
-                print(f"  {warning}")
-            print("")
+                logger.warning(f"  {warning}")
+            logger.info("")
         
         # Opción de Limpieza de Duplicados
         has_duplicates = any("duplicados exactos" in warning.lower() for warning in all_warnings)
         if has_duplicates:
-            print("\n[INFO] Se han detectado duplicados exactos en los datos.")
+            logger.info("\nSe han detectado duplicados exactos en los datos.")
             response = input("¿Desea eliminar duplicados exactos automáticamente? (s/n): ").strip().lower()
             
             if response == 's' or response == 'y' or response == 'yes' or response == 'si':
@@ -37,18 +43,18 @@ def main():
                 # Limpiar InputPL
                 input_df, removed_input, msg_input = remove_exact_duplicates(input_df, "InputPL")
                 if msg_input:
-                    print(f"  {msg_input}")
+                    logger.info(f"  {msg_input}")
                 
                 # Limpiar Mayor
                 mayor_df, removed_mayor, msg_mayor = remove_exact_duplicates(mayor_df, "Mayor")
                 if msg_mayor:
-                    print(f"  {msg_mayor}")
+                    logger.info(f"  {msg_mayor}")
                 
                 total_removed = removed_input + removed_mayor
                 if total_removed > 0:
-                    print(f"[SUCCESS] Se eliminaron {total_removed} duplicados en total. Continuando con datos limpios...\n")
+                    logger.success(f"Se eliminaron {total_removed} duplicados en total. Continuando con datos limpios...\n")
             else:
-                print("[INFO] Continuando sin eliminar duplicados...\n")
+                logger.info("Continuando sin eliminar duplicados...\n")
         
         # 2. Comparo para ver qué movimientos faltan en el histórico
         new_movements = find_missing_records(input_df, mayor_df)
@@ -63,12 +69,12 @@ def main():
             save_to_excel(classified_df, INPUT_PL_FILE)
             
         else:
-            print("[INFO] No new records found to add. Everything is up to date!")
+            logger.info("No new records found to add. Everything is up to date!")
             
     else:
-        print("[ERROR] Flow stopped because of missing or corrupt files.")
+        logger.error("Flow stopped because of missing or corrupt files.")
 
-    print("----------------------------------")
+    logger.info("=" * 50)
 
 if __name__ == "__main__":
     main()

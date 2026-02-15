@@ -1,5 +1,8 @@
 import pandas as pd
 from src.config import UNIQUE_IDENTIFIERS
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 def find_missing_records(input_df, mayor_df):
     """
@@ -9,10 +12,10 @@ def find_missing_records(input_df, mayor_df):
     
     # Si falta algún archivo, no puedo comparar nada, así que salgo
     if input_df is None or mayor_df is None:
-        print("[ERROR] Cannot compare: one or both DataFrames are empty.")
+        logger.error("Cannot compare: one or both DataFrames are empty.")
         return None
 
-    print(f"[INFO] Comparing records using identifiers: {UNIQUE_IDENTIFIERS}")
+    logger.info(f"Comparing records using identifiers: {UNIQUE_IDENTIFIERS}")
 
     # 'merge' (como un BUSCARV) para cruzar las dos tablas.
     # El indicator=True me crea una columna que me dice de donde viene cada fila.
@@ -33,6 +36,6 @@ def find_missing_records(input_df, mayor_df):
     # Limpio las posibles filas que digan 'END', que no son movimientos reales
     missing_records = missing_records[missing_records['Nº Asiento'] != 'END']
 
-    print(f"[SUCCESS] Comparison finished. Found {len(missing_records)} new records.")
+    logger.success(f"Comparison finished. Found {len(missing_records)} new records.")
     
     return missing_records

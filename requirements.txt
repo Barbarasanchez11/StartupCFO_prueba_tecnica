@@ -4,3 +4,4 @@ thefuzz
 streamlit
 pytest
 pytest-cov
+rich

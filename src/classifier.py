@@ -1,5 +1,8 @@
 import pandas as pd
 from thefuzz import process, fuzz
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 def create_knowledge_base(historical_df):
     """
@@ -44,10 +47,10 @@ def classify_missing_records(new_df, historical_df):
     if new_df is None or len(new_df) == 0:
         return new_df
 
-    print("[INFO] Learning from historical accounting movements...")
+    logger.info("Learning from historical accounting movements...")
     knowledge_base = create_knowledge_base(historical_df)
 
-    print(f"[INFO] Classifying {len(new_df)} new movements...")
+    logger.info(f"Classifying {len(new_df)} new movements...")
     
     # Ejecuto la sugerencia para cada concepto nuevo
     results = new_df['Concepto'].apply(lambda x: get_suggestion(str(x), knowledge_base))
@@ -56,6 +59,6 @@ def classify_missing_records(new_df, historical_df):
     new_df['Tipo de gasto'] = [res[0] for res in results]
     new_df['Confidence'] = [res[1] for res in results]
 
-    print("[SUCCESS] Classification finished successfully.")
+    logger.success("Classification finished successfully.")
     
     return new_df
