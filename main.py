@@ -25,6 +25,31 @@ def main():
                 print(f"  {warning}")
             print("")
         
+        # Opción de Limpieza de Duplicados
+        has_duplicates = any("duplicados exactos" in warning.lower() for warning in all_warnings)
+        if has_duplicates:
+            print("\n[INFO] Se han detectado duplicados exactos en los datos.")
+            response = input("¿Desea eliminar duplicados exactos automáticamente? (s/n): ").strip().lower()
+            
+            if response == 's' or response == 'y' or response == 'yes' or response == 'si':
+                from src.validator import remove_exact_duplicates
+                
+                # Limpiar InputPL
+                input_df, removed_input, msg_input = remove_exact_duplicates(input_df, "InputPL")
+                if msg_input:
+                    print(f"  {msg_input}")
+                
+                # Limpiar Mayor
+                mayor_df, removed_mayor, msg_mayor = remove_exact_duplicates(mayor_df, "Mayor")
+                if msg_mayor:
+                    print(f"  {msg_mayor}")
+                
+                total_removed = removed_input + removed_mayor
+                if total_removed > 0:
+                    print(f"[SUCCESS] Se eliminaron {total_removed} duplicados en total. Continuando con datos limpios...\n")
+            else:
+                print("[INFO] Continuando sin eliminar duplicados...\n")
+        
         # 2. Comparo para ver qué movimientos faltan en el histórico
         new_movements = find_missing_records(input_df, mayor_df)
         

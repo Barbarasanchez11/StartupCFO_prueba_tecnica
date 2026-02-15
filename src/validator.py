@@ -85,3 +85,52 @@ def audit_data_quality(df, file_label):
             warnings.append(f" **[{file_label}]** Detectadas {count} posibles inconsistencias: Registros con mismo Nº Asiento y Fecha pero diferente Saldo (posibles duplicados con error).")
 
     return warnings
+
+def remove_exact_duplicates(df, file_label):
+    """
+    Elimina duplicados exactos (mismo Nº Asiento, Fecha y Saldo) del DataFrame.
+    Mantiene solo la primera ocurrencia de cada grupo de duplicados.
+    
+    Args:
+        df: DataFrame a limpiar
+        file_label: Etiqueta del archivo para mensajes informativos
+    
+    Returns:
+        tuple: (df_cleaned, removed_count, summary_message)
+            - df_cleaned: DataFrame sin duplicados
+            - removed_count: Número de filas eliminadas
+            - summary_message: Mensaje resumen de lo eliminado
+    """
+    if df is None or df.empty:
+        return df, 0, ""
+    
+    if not all(c in df.columns for c in UNIQUE_IDENTIFIERS):
+        return df, 0, ""
+    
+    # Guardamos el tamaño original
+    original_size = len(df)
+    
+    # Filtramos 'END' para no tocarlo
+    end_mask = df['Nº Asiento'].astype(str).str.upper() == 'END'
+    end_rows = df[end_mask].copy() if end_mask.any() else pd.DataFrame()
+    clean_df = df[~end_mask].copy()
+    
+    # Eliminamos duplicados exactos, manteniendo la primera ocurrencia
+    df_cleaned = clean_df.drop_duplicates(subset=UNIQUE_IDENTIFIERS, keep='first')
+    
+    # Volvemos a añadir las filas END si existían
+    if not end_rows.empty:
+        df_cleaned = pd.concat([df_cleaned, end_rows], ignore_index=False)
+        # Restauramos el índice original para mantener el orden
+        df_cleaned = df_cleaned.sort_index()
+    
+    # Calculamos cuántas filas se eliminaron
+    removed_count = original_size - len(df_cleaned)
+    
+    # Generamos mensaje resumen
+    if removed_count > 0:
+        summary_message = f"[{file_label}] Se eliminaron {removed_count} duplicados exactos automáticamente."
+    else:
+        summary_message = ""
+    
+    return df_cleaned, removed_count, summary_message

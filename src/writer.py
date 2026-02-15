@@ -18,29 +18,46 @@ def save_to_excel(classified_df, template_path, input_df=None):
     wb = openpyxl.load_workbook(template_path, data_only=True, keep_vba=False)
     sheet = wb.active
 
-    # 2. Busco en qué fila está el 'END' para saber dónde insertar
-    end_row = None
+    # 2. Busco TODAS las filas 'END' para encontrar la PRIMERA (donde empiezan los datos nuevos)
+    end_rows = []
     # Miro en la columna 1 (Nº Asiento) que es donde suele estar el END
     for row in range(1, sheet.max_row + 1):
         cell_val = str(sheet.cell(row=row, column=1).value).strip().upper()
         if cell_val == 'END':
-            end_row = row
-            break
+            end_rows.append(row)
     
-    # Si no lo encuentro, pues escribo al final y ya está
-    if end_row is None:
+    # Si no encuentro ninguna, escribo al final
+    if not end_rows:
         end_row = sheet.max_row + 1
+        first_end_row = end_row
         print("[WARNING] Could not find 'END' row. Writing at the end of the sheet.")
     else:
-        print(f"[INFO] Found 'END' at row {end_row}. Inserting {len(classified_df)} rows...")
+        # Uso la PRIMERA fila END como punto de inserción (donde empiezan los datos nuevos)
+        first_end_row = min(end_rows)
+        end_row = first_end_row
+        
+        # Si hay múltiples filas END, elimino las intermedias y la última, dejando solo la primera
+        if len(end_rows) > 1:
+            print(f"[INFO] Found {len(end_rows)} 'END' rows. Removing all except the first one at row {first_end_row}.")
+            # Elimino todas las filas END excepto la primera (de mayor a menor para no afectar los índices)
+            for row_to_delete in sorted(end_rows[1:], reverse=True):
+                sheet.delete_rows(row_to_delete)
+            print(f"[INFO] Cleaned up. Using 'END' at row {end_row} as insertion point.")
+        else:
+            print(f"[INFO] Found 'END' at row {end_row}. Inserting {len(classified_df)} rows...")
     
    
-    if input_df is not None and end_row > 2:  # end_row > 2 porque fila 1 es header
-        print(f"[INFO] Fixing existing rows (1 to {end_row-1}) from normalized DataFrame...")
+    if input_df is not None and first_end_row > 2:  # first_end_row > 2 porque fila 1 es header
+        print(f"[INFO] Fixing existing rows (1 to {first_end_row-1}) from normalized DataFrame...")
         # Reescribir filas existentes desde el DataFrame normalizado (que tiene valores correctos)
+        # IMPORTANTE: Solo reescribir hasta la PRIMERA fila END, y excluir filas END del DataFrame
         for df_idx, (_, row_data) in enumerate(input_df.iterrows(), start=2):  # start=2 porque fila 1 es header
-            if df_idx >= end_row:  # No tocar las filas que vamos a insertar
+            # No reescribir si es una fila END o si está después de la primera END
+            if df_idx >= first_end_row:
                 break
+            # No reescribir filas END del DataFrame
+            if str(row_data.get('Nº Asiento', '')).strip().upper() == 'END':
+                continue
             for col_idx, col_name in enumerate(INPUT_PL_COLS, start=1):
                 if col_name in row_data:
                     cell_value = row_data[col_name]
@@ -61,8 +78,19 @@ def save_to_excel(classified_df, template_path, input_df=None):
                         cell.value = cell_value
 
    
-    # Primero, desplazamos la fila END hacia abajo insertando filas vacías
+    # 3. Insertar los nuevos datos antes de la primera fila END
+    # Esto desplazará la primera END hacia abajo
     sheet.insert_rows(end_row, amount=len(classified_df))
+    
+    # 4. Después de insertar, eliminar la primera END que ahora está en medio
+    # (está en end_row + len(classified_df) porque se desplazó)
+    end_row_after_insert = end_row + len(classified_df)
+    # Verificar que efectivamente hay una END ahí
+    if end_row_after_insert <= sheet.max_row:
+        cell_val_after = str(sheet.cell(row=end_row_after_insert, column=1).value).strip().upper()
+        if cell_val_after == 'END':
+            print(f"[INFO] Removing intermediate 'END' row at {end_row_after_insert} (now in the middle after insertion).")
+            sheet.delete_rows(end_row_after_insert)
 
     # 4. Empiezo a rellenar SOLO las nuevas filas insertadas (no toco las existentes)
     # Creo un estilo amarillo para resaltar los que tienen poca confianza
