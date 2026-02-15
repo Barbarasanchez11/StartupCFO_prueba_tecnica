@@ -111,9 +111,11 @@ Esta etiqueta se asigna cuando el sistema no puede clasificar automáticamente u
 
 ### 3. Inyección Inteligente en Excel
 A diferencia de las exportaciones estándar en CSV, esta herramienta:
-- Localiza el marcador `END` en la hoja de Excel.
+- Localiza el marcador `END` en la hoja de Excel (usa la primera fila END encontrada como punto de inserción).
 - Inserta las nuevas filas *por encima* del marcador para preservar las notas finales del documento.
+- **Limpieza de múltiples filas END**: Si el archivo contiene múltiples filas END (intermedias y finales), el sistema elimina automáticamente las intermedias, dejando solo una fila END al final del documento.
 - Replica el formato de las celdas (fechas, formatos numéricos).
+- Reescribe las filas existentes desde el DataFrame normalizado para corregir valores corruptos (como "dic/99" en la columna Mes).
 
 ---
 
@@ -136,9 +138,23 @@ streamlit run app.py
 
 #### Opción B: Terminal (CLI)
 Ideal para procesamiento local y scripts de automatización.
+
+**Requisitos previos:**
+- Los archivos `InputPL.xlsx` y `Mayor_TSCFO.xlsx` deben estar en `data/raw/`
+- O modificar las rutas en `src/config.py` según tu estructura
+
+**Ejecución:**
 ```bash
 python3 main.py
 ```
+
+**Flujo interactivo:**
+1. El sistema carga y normaliza los datos
+2. Muestra avisos de calidad de datos en la consola
+3. Si detecta duplicados exactos, pregunta: `¿Desea eliminar duplicados exactos automáticamente? (s/n):`
+4. Responde `s` para eliminar o `n` para continuar sin limpiar
+5. El proceso continúa con la comparación y clasificación
+6. Genera el archivo actualizado en `data/output/InputPL_Updated.xlsx`
 
 ---
 
@@ -172,6 +188,11 @@ El sistema realiza una auditoría automática de calidad de datos antes del proc
    - Indica cuántos grupos de duplicados se encontraron y el total de filas afectadas.
    - **Ejemplo**: `[InputPL] Detectados 2 grupos de duplicados exactos (mismo Nº Asiento, Fecha y Saldo) con un total de 5 filas afectadas (Filas Excel aprox: [45, 46, 78]...).`
    - **Archivo de Prueba**: `data/raw/InputPL_duplicate.xlsx` contiene ejemplos de duplicados para probar esta funcionalidad.
+   - **Limpieza Interactiva**: Si se detectan duplicados, el sistema ofrece la opción de eliminarlos automáticamente:
+     - **En la Web**: Checkbox "Eliminar duplicados exactos automáticamente"
+     - **En la Terminal**: Pregunta interactiva `¿Desea eliminar duplicados exactos automáticamente? (s/n):`
+     - Se mantiene solo la primera ocurrencia de cada grupo de duplicados
+     - Los duplicados eliminados no aparecerán en el Excel final
 
 4. **Inconsistencias en Saldos**
    - Detecta registros con el mismo `Nº Asiento` y `Fecha` pero diferente `Saldo`.
