@@ -50,8 +50,9 @@ def normalize_data(df, is_mayor=False):
         # Intentamos la conversión
         temp_fecha = pd.to_datetime(df['Fecha'], errors='coerce')
         
-        # Identificamos filas donde la conversión falló (pero no estaban vacías originalmente)
-        invalid_dates = temp_fecha.isna() & df['Fecha'].notna()
+        # Identificamos filas donde la conversión falló (pero no eran vacías ni decían 'END')
+        is_not_end = df['Fecha'].astype(str).str.upper().str.strip() != 'END'
+        invalid_dates = temp_fecha.isna() & df['Fecha'].notna() & is_not_end
         
         if invalid_dates.any():
             bad_rows = df.index[invalid_dates].tolist()

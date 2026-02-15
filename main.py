@@ -8,10 +8,22 @@ def main():
     print("--- StartupCFO Tool ---")
     
     # 1. Empiezo cargando y preparando los datos de los Excel
-    input_df, mayor_df = get_prepared_data()
-    
+    try:
+        input_df, mayor_df = get_prepared_data()
+    except ValueError as e:
+        print(f"[ERROR] {e}")
+        return
+
     # Si todo se ha cargado bien, sigo adelante
     if input_df is not None and mayor_df is not None:
+        # Auditoría de Calidad
+        from src.validator import audit_data_quality
+        all_warnings = audit_data_quality(input_df, "InputPL") + audit_data_quality(mayor_df, "Mayor")
+        if all_warnings:
+            print("\n[WARNING] Se han detectado problemas de calidad en los datos:")
+            for warning in all_warnings:
+                print(f"  {warning}")
+            print("")
         
         # 2. Comparo para ver qué movimientos faltan en el histórico
         new_movements = find_missing_records(input_df, mayor_df)

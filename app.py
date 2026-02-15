@@ -75,6 +75,15 @@ if st.button(" Ejecutar Proceso"):
             st.stop()
         
         if input_df is not None and mayor_df is not None:
+            # 1.1 Auditoría de Calidad
+            from src.validator import audit_data_quality
+            all_warnings = audit_data_quality(input_df, "InputPL") + audit_data_quality(mayor_df, "Mayor")
+            
+            if all_warnings:
+                with st.expander("**Avisos de Calidad de Datos** (Pulsa para ver detalles)", expanded=False):
+                    for warning in all_warnings:
+                        st.write(warning)
+                    st.caption("Nota: El proceso continuará, pero se recomienda revisar estos puntos.")
             
             # 2. Comparación
             status.info(" Paso 2: Buscando registros faltantes en el histórico...")
