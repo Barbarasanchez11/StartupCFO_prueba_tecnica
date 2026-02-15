@@ -167,7 +167,13 @@ El sistema realiza una auditoría automática de calidad de datos antes del proc
    - Excluye automáticamente la fila `END` (marcador de fin de datos).
    - **Ejemplo**: `[InputPL] Detectadas 1 celdas vacías en la columna crítica 'Fecha' (Filas Excel aprox: [201]...).`
 
-3. **Inconsistencias en Saldos**
+3. **Duplicados Exactos**
+   - Detecta registros con el mismo `Nº Asiento`, `Fecha` y `Saldo` (identificadores únicos).
+   - Indica cuántos grupos de duplicados se encontraron y el total de filas afectadas.
+   - **Ejemplo**: `[InputPL] Detectados 2 grupos de duplicados exactos (mismo Nº Asiento, Fecha y Saldo) con un total de 5 filas afectadas (Filas Excel aprox: [45, 46, 78]...).`
+   - **Archivo de Prueba**: `data/raw/InputPL_duplicate.xlsx` contiene ejemplos de duplicados para probar esta funcionalidad.
+
+4. **Inconsistencias en Saldos**
    - Detecta registros con el mismo `Nº Asiento` y `Fecha` pero diferente `Saldo`.
    - Puede indicar duplicados con errores o inconsistencias en los datos.
    - **Ejemplo**: `[Mayor] Detectadas 2 posibles inconsistencias: Registros con mismo Nº Asiento y Fecha pero diferente Saldo.`
@@ -176,10 +182,17 @@ El sistema realiza una auditoría automática de calidad de datos antes del proc
 - **En la Web**: Los avisos se muestran en un expandible "Avisos de Calidad de Datos" antes del procesamiento.
 - **En la Terminal**: Los avisos se imprimen en la consola como advertencias.
 
-### Archivo de Prueba: `InputPL_error.xlsx`
-Se ha incluido el archivo `data/raw/InputPL_error.xlsx` específicamente para demostrar esta funcionalidad de robustez. 
+### Archivos de Prueba
+
+#### `InputPL_error.xlsx`
+Se ha incluido el archivo `data/raw/InputPL_error.xlsx` específicamente para demostrar la validación de estructura. 
 - **Estado**: A este archivo se le ha eliminado deliberadamente la columna `Concepto`.
 - **Propósito**: Al intentar cargarlo, el sistema mostrará el error de validación, confirmando que la herramienta protege contra archivos mal formados que podrían corromper el informe final.
+
+#### `InputPL_duplicate.xlsx`
+Se ha incluido el archivo `data/raw/InputPL_duplicate.xlsx` para demostrar la detección de duplicados exactos.
+- **Estado**: Este archivo contiene registros duplicados intencionalmente (mismo `Nº Asiento`, `Fecha` y `Saldo`).
+- **Propósito**: Al procesarlo, el sistema detectará y reportará los duplicados en los avisos de calidad de datos, permitiendo verificar que la funcionalidad de detección funciona correctamente.
 
 ### Normalización y Preservación de Formatos
 El sistema implementa mecanismos avanzados para garantizar la integridad de los formatos en Excel, especialmente en la columna `Mes`:
