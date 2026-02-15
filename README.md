@@ -326,3 +326,95 @@ import logging
 
 logger = setup_logger("MiLogger", level=logging.DEBUG, use_rich=False)
 ```
+
+---
+
+## 🌐 Deployment
+
+La aplicación está desplegada en **Render** y disponible en:
+
+🔗 **[https://startupcfo-prueba-tecnica.onrender.com](https://startupcfo-prueba-tecnica.onrender.com)**
+
+### Configuración de Deployment
+
+El proyecto incluye un archivo `render.yaml` que configura automáticamente el despliegue en Render:
+
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
+- **Plan**: Free tier
+
+### Notas Importantes
+
+- **Almacenamiento**: En el plan gratuito, los archivos subidos se procesan en memoria y no se guardan permanentemente.
+- **Auto-deploy**: Los cambios en la rama `develop` se despliegan automáticamente.
+- **Disponibilidad**: El servicio puede tardar unos segundos en iniciar si ha estado inactivo (plan gratuito).
+
+---
+
+## 🔮 Mejoras Futuras
+
+A continuación se listan posibles mejoras que podrían implementarse en el futuro:
+
+### Mejoras Técnicas
+
+1. **Sistema de aprendizaje incremental**
+   - Guardar las clasificaciones manuales del usuario para mejorar la base de conocimiento
+   - Implementar un sistema de feedback que aprenda de las correcciones
+
+2. **Mejora del algoritmo de clasificación**
+   - Experimentar con embeddings de texto (Word2Vec, FastText) para mejor comprensión semántica
+   - Implementar un modelo de clasificación simple (Naive Bayes o SVM) entrenado con el histórico
+
+3. **Detección de duplicados avanzada**
+   - Implementar detección de duplicados "casi exactos" (mismo concepto pero fechas ligeramente diferentes)
+   - Usar técnicas de similitud de texto para encontrar registros similares
+
+4. **Exportación de resultados**
+   - Añadir opción para exportar solo los nuevos registros en CSV
+   - Generar reportes estadísticos por tipo de gasto
+
+### Mejoras de UX
+
+1. **Edición en línea**
+   - Permitir editar directamente "NEW - NEEDS REVIEW" desde la interfaz web
+   - Guardar correcciones para mejorar futuras clasificaciones
+
+2. **Filtros y búsqueda**
+   - Añadir filtros por tipo de gasto, rango de fechas, nivel de confianza
+   - Búsqueda de conceptos específicos
+
+3. **Visualizaciones**
+   - Gráficos de distribución de gastos por categoría
+   - Dashboard con estadísticas resumidas
+
+### Mejoras de Robustez
+
+1. **Validación avanzada**
+   - Detección de importes anormales (valores muy altos o muy bajos)
+   - Validación de rangos de fechas (alertar fechas fuera del período esperado)
+
+2. **Manejo de errores mejorado**
+   - Logging estructurado a archivo
+   - Notificaciones por email en caso de errores críticos
+
+3. **Tests adicionales**
+   - Tests de integración end-to-end
+   - Tests de rendimiento para archivos grandes
+
+### Mejoras de Infraestructura
+
+1. **Almacenamiento persistente**
+   - Integración con AWS S3 o Google Cloud Storage para guardar archivos
+   - Base de datos para historial de clasificaciones
+
+2. **API REST**
+   - Exponer funcionalidades como API para integración con otros sistemas
+   - Endpoints para clasificación y validación
+
+3. **Autenticación y multi-usuario**
+   - Sistema de usuarios para diferentes clientes
+   - Historial de cambios y auditoría
+
+---
+
+**Nota**: Estas mejoras son sugerencias para futuras iteraciones. La solución actual es funcional y completa para el caso de uso descrito en el briefing.
