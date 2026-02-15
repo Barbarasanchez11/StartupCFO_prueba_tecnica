@@ -5,24 +5,20 @@ from src.writer import save_to_excel
 from src.config import INPUT_PL_FILE
 from src.logger import setup_logger
 
-# Set up logger for main
 logger = setup_logger("StartupCFO", use_rich=True)
 
 def main():
     logger.info("=" * 50)
     logger.info("StartupCFO Tool - Accounting Reconciliation")
     logger.info("=" * 50)
-    
-    # 1. Empiezo cargando y preparando los datos de los Excel
+
     try:
         input_df, mayor_df = get_prepared_data()
     except ValueError as e:
         logger.error(f"{e}")
         return
 
-    # Si todo se ha cargado bien, sigo adelante
     if input_df is not None and mayor_df is not None:
-        # Auditoría de Calidad
         from src.validator import audit_data_quality
         all_warnings = audit_data_quality(input_df, "InputPL") + audit_data_quality(mayor_df, "Mayor")
         if all_warnings:
@@ -30,8 +26,7 @@ def main():
             for warning in all_warnings:
                 logger.warning(f"  {warning}")
             logger.info("")
-        
-        # Opción de Limpieza de Duplicados
+
         has_duplicates = any("duplicados exactos" in warning.lower() for warning in all_warnings)
         if has_duplicates:
             logger.info("\nSe han detectado duplicados exactos en los datos.")
@@ -39,13 +34,11 @@ def main():
             
             if response == 's' or response == 'y' or response == 'yes' or response == 'si':
                 from src.validator import remove_exact_duplicates
-                
-                # Limpiar InputPL
+
                 input_df, removed_input, msg_input = remove_exact_duplicates(input_df, "InputPL")
                 if msg_input:
                     logger.info(f"  {msg_input}")
-                
-                # Limpiar Mayor
+
                 mayor_df, removed_mayor, msg_mayor = remove_exact_duplicates(mayor_df, "Mayor")
                 if msg_mayor:
                     logger.info(f"  {msg_mayor}")
@@ -55,17 +48,13 @@ def main():
                     logger.success(f"Se eliminaron {total_removed} duplicados en total. Continuando con datos limpios...\n")
             else:
                 logger.info("Continuando sin eliminar duplicados...\n")
-        
-        # 2. Comparo para ver qué movimientos faltan en el histórico
+
         new_movements = find_missing_records(input_df, mayor_df)
-        
-        # Si hay algo nuevo, me pongo manos a la obra
+
         if new_movements is not None and len(new_movements) > 0:
-            
-            # 3. Clasifico los gastos usando lógica fuzzy (IA sencillita)
+
             classified_df = classify_missing_records(new_movements, input_df)
-            
-            # 4. Por último, inyecto los nuevos datos en el Excel final
+
             save_to_excel(classified_df, INPUT_PL_FILE)
             
         else:

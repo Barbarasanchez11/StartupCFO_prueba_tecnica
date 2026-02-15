@@ -17,7 +17,7 @@ class TestNormalizeData:
         df = pd.DataFrame({
             'Nº Asiento': [1, 2],
             'Fecha': pd.to_datetime(['2025-01-15', '2025-02-20']),
-            'Mes': pd.to_datetime(['2025-01-01', '2025-02-01']),  # Valid dates
+            'Mes': pd.to_datetime(['2025-01-01', '2025-02-01']), 
             'Concepto': ['A', 'B']
         })
         

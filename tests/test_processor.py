@@ -15,7 +15,7 @@ class TestFindMissingRecords:
         missing = find_missing_records(sample_input_df, sample_mayor_df)
         
         assert missing is not None
-        assert len(missing) == 2  # Should find 2 new records (4 and 5)
+        assert len(missing) == 2  
         assert 4 in missing['Nº Asiento'].values
         assert 5 in missing['Nº Asiento'].values
     
@@ -51,7 +51,7 @@ class TestFindMissingRecords:
         })
         
         mayor_df = pd.DataFrame({
-            'Nº Asiento': [1, 2, 'END', 3],  # Includes END and a new record
+            'Nº Asiento': [1, 2, 'END', 3], 
             'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20', None, '2025-02-10']),
             'Saldo': [100.50, 200.75, 0.00, 150.00]
         })
@@ -59,7 +59,7 @@ class TestFindMissingRecords:
         missing = find_missing_records(input_df, mayor_df)
         
         assert missing is not None
-        assert len(missing) == 1  # Only record 3, not END
+        assert len(missing) == 1 
         assert 'END' not in missing['Nº Asiento'].values
     
     def test_find_missing_records_uses_unique_identifiers(self):
@@ -68,20 +68,18 @@ class TestFindMissingRecords:
             'Nº Asiento': [1, 2],
             'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20']),
             'Saldo': [100.50, 200.75],
-            'Concepto': ['A', 'B']  # Different concept
+            'Concepto': ['A', 'B']  
         })
         
         mayor_df = pd.DataFrame({
             'Nº Asiento': [1, 2, 3],
             'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20', '2025-02-10']),
             'Saldo': [100.50, 200.75, 150.00],
-            'Concepto': ['X', 'Y', 'Z']  # Different concepts but same identifier
+            'Concepto': ['X', 'Y', 'Z'] 
         })
         
         missing = find_missing_records(input_df, mayor_df)
-        
-        # Records 1 and 2 have same Nº Asiento, Fecha and Saldo, so they are not new
-        # Only record 3 is new
+
         assert len(missing) == 1
         assert missing['Nº Asiento'].iloc[0] == 3
     
@@ -97,5 +95,5 @@ class TestFindMissingRecords:
         missing = find_missing_records(empty_input, mayor_df)
         
         assert missing is not None
-        assert len(missing) == 2  # All Mayor records are new
+        assert len(missing) == 2 
 

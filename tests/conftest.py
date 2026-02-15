@@ -29,7 +29,7 @@ def sample_input_df():
 def sample_mayor_df():
     """Sample DataFrame for Mayor with more records than InputPL."""
     return pd.DataFrame({
-        'Nº Asiento': [1, 2, 3, 4, 5],  # 4 and 5 are new
+        'Nº Asiento': [1, 2, 3, 4, 5],  
         'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20', '2025-02-10', '2025-03-15', '2025-03-20']),
         'Documento': ['DOC1', 'DOC2', 'DOC3', 'DOC4', 'DOC5'],
         'Concepto': ['Concepto 1', 'Concepto 2', 'Concepto 3', 'Concepto 4', 'Concepto 5'],
@@ -83,8 +83,8 @@ def df_with_negative_values():
     return pd.DataFrame({
         'Nº Asiento': [1, 2, 3],
         'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20', '2025-02-10']),
-        'Debe': [-100.50, 200.75, 150.00],  # Negative in first row
-        'Haber': [0.00, -50.00, 0.00],  # Negative in second row
+        'Debe': [-100.50, 200.75, 150.00], 
+        'Haber': [0.00, -50.00, 0.00],  
         'Saldo': [100.50, 200.75, 150.00],
         'Concepto': ['A', 'B', 'C']
     })

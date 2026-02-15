@@ -16,30 +16,27 @@ except ImportError:
 
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with colors for terminal output."""
-    
-    # Color codes
+
     COLORS = {
-        'DEBUG': '\033[36m',      # Cyan
-        'INFO': '\033[34m',       # Blue
-        'SUCCESS': '\033[32m',    # Green
-        'WARNING': '\033[33m',    # Yellow
-        'ERROR': '\033[31m',      # Red
-        'CRITICAL': '\033[35m',   # Magenta
+        'DEBUG': '\033[36m',     
+        'INFO': '\033[34m',       
+        'SUCCESS': '\033[32m',   
+        'WARNING': '\033[33m',    
+        'ERROR': '\033[31m',     
+        'CRITICAL': '\033[35m',   
     }
     RESET = '\033[0m'
     BOLD = '\033[1m'
     
     def format(self, record):
-        # Get the color for this log level
+       
         log_color = self.COLORS.get(record.levelname, '')
         levelname = record.levelname
             
-        # Create colored prefix
         colored_level = f"{log_color}{self.BOLD}[{levelname}]{self.RESET}"
-        
-        # Format the message
+  
         log_message = super().format(record)
-        # Replace the default levelname with colored one
+
         log_message = log_message.replace(f"[{levelname}]", colored_level, 1)
         
         return log_message
@@ -59,13 +56,11 @@ def setup_logger(name: str = "StartupCFO", level: int = logging.INFO, use_rich: 
     """
     logger = logging.getLogger(name)
     logger.setLevel(level)
-    
-    # Remove existing handlers to avoid duplicates
+
     logger.handlers.clear()
-    
-    # Create console handler
+
     if RICH_AVAILABLE and use_rich:
-        # Use Rich for beautiful terminal output
+
         console = Console(stderr=True)
         handler = RichHandler(
             console=console,
@@ -77,7 +72,6 @@ def setup_logger(name: str = "StartupCFO", level: int = logging.INFO, use_rich: 
         )
         handler.setFormatter(logging.Formatter("%(message)s", datefmt="[%X]"))
     else:
-        # Fallback to colored formatter
         handler = logging.StreamHandler(sys.stdout)
         formatter = ColoredFormatter(
             fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -87,7 +81,7 @@ def setup_logger(name: str = "StartupCFO", level: int = logging.INFO, use_rich: 
     
     logger.addHandler(handler)
     
-    # Add custom SUCCESS level
+
     logging.addLevelName(25, "SUCCESS")
     
     def success(self, message, *args, **kwargs):
@@ -114,13 +108,10 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
         name = "StartupCFO"
     
     logger = logging.getLogger(name)
-    
-    # If logger doesn't have handlers, set it up
-    # Check if root logger has handlers (means setup_logger was called)
+
     root_logger = logging.getLogger("StartupCFO")
     if not root_logger.handlers:
         setup_logger("StartupCFO")
-    
-    # Return logger with the requested name (will inherit from root)
+
     return logging.getLogger(name)
 

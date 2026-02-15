@@ -26,9 +26,9 @@ class TestAuditDataQuality:
     def test_audit_data_quality_detects_empty_cells(self):
         """Test: detect empty cells in critical fields."""
         df = pd.DataFrame({
-            'Nº Asiento': [1, None, 3],  # Empty in row 2
-            'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20', None]),  # Empty in row 3
-            'Concepto': ['A', 'B', ''],  # Empty in row 3
+            'Nº Asiento': [1, None, 3], 
+            'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20', None]),  
+            'Concepto': ['A', 'B', ''], 
             'Saldo': [100.50, 200.75, 150.00]
         })
         
@@ -47,8 +47,7 @@ class TestAuditDataQuality:
     def test_audit_data_quality_ignores_end_row(self, df_with_end_row):
         """Test: ignore END row in audit."""
         warnings = audit_data_quality(df_with_end_row, "Test")
-        
-        # END row should not generate empty cell warnings
+
         end_warnings = [w for w in warnings if "end" in w.lower()]
         assert len(end_warnings) == 0
     
@@ -79,8 +78,7 @@ class TestRemoveExactDuplicates:
         """Test: correctly remove exact duplicates."""
         original_size = len(df_with_duplicates)
         df_cleaned, removed_count, message = remove_exact_duplicates(df_with_duplicates, "Test")
-        
-        # Should remove 3 duplicates (6 rows, 3 unique)
+
         assert len(df_cleaned) == 3
         assert removed_count == 3
         assert "eliminaron" in message.lower()
@@ -89,8 +87,7 @@ class TestRemoveExactDuplicates:
     def test_remove_exact_duplicates_preserves_end_row(self, df_with_end_row):
         """Test: preserve END row when removing duplicates."""
         df_cleaned, removed_count, message = remove_exact_duplicates(df_with_end_row, "Test")
-        
-        # Should preserve the END row
+
         end_rows = df_cleaned[df_cleaned['Nº Asiento'].astype(str).str.upper() == 'END']
         assert len(end_rows) == 1
     
@@ -116,7 +113,7 @@ class TestRemoveExactDuplicates:
         df = pd.DataFrame({
             'Nº Asiento': [1, 2],
             'Fecha': pd.to_datetime(['2025-01-15', '2025-01-20'])
-            # Missing 'Saldo'
+
         })
         
         df_cleaned, removed_count, message = remove_exact_duplicates(df, "Test")
@@ -131,11 +128,11 @@ class TestRemoveExactDuplicates:
             'Nº Asiento': [1, 1, 1],
             'Fecha': pd.to_datetime(['2025-01-15', '2025-01-15', '2025-01-15']),
             'Saldo': [100.50, 100.50, 100.50],
-            'Concepto': ['Primera', 'Segunda', 'Tercera']  # Different concepts
+            'Concepto': ['Primera', 'Segunda', 'Tercera'] 
         })
         
         df_cleaned, removed_count, message = remove_exact_duplicates(df, "Test")
         
         assert len(df_cleaned) == 1
-        assert df_cleaned['Concepto'].iloc[0] == 'Primera'  # Keeps the first one
+        assert df_cleaned['Concepto'].iloc[0] == 'Primera' 
 
