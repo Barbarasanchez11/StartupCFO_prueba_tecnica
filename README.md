@@ -57,6 +57,7 @@ graph TD
 - **Streamlit**: Interfaz web moderna para un procesamiento de "un solo clic".
 - **TheFuzz**: Coincidencia difusa de texto para la sugerencia de categorías de gastos.
 - **Openpyxl**: Manipulación de Excel a bajo nivel para preservar los estilos y diseños originales del documento.
+- **Pytest**: Framework de testing para pruebas unitarias y cobertura de código.
 
 ---
 
@@ -221,3 +222,47 @@ El sistema implementa mecanismos avanzados para garantizar la integridad de los 
 - **Normalización Inteligente de Fechas**: Si la columna `Mes` está vacía o contiene valores inválidos, el sistema deriva automáticamente el valor desde la columna `Fecha` (formato: `ene/25`, `feb/25`, etc.).
 - **Prevención de Corrupción de Datos**: Al escribir en Excel, la columna `Mes` se formatea explícitamente como texto (`@`) para evitar que Excel interprete valores como `abr/25` como fechas, lo que podría corromperlos a valores incorrectos como `dic/99`.
 - **Reescritura de Filas Existentes**: Las filas existentes en el Excel se reescriben desde el DataFrame normalizado para corregir cualquier valor corrupto que pudiera existir previamente, asegurando que todo el documento mantenga formatos consistentes.
+
+---
+
+## 🧪 Testing
+
+El proyecto incluye una suite completa de **29 tests unitarios** que cubren las funcionalidades principales del sistema.
+
+### Ejecutar Tests
+
+```bash
+# Ejecutar todos los tests
+pytest tests/ -v
+
+# Ejecutar un archivo específico
+pytest tests/test_loader.py -v
+
+# Ejecutar con cobertura de código
+pytest tests/ --cov=src --cov-report=html
+```
+
+### Cobertura de Tests
+
+Los tests cubren:
+
+- ✅ **Normalización de datos**: Formateo de fechas, derivación de Mes desde Fecha, redondeo numérico
+- ✅ **Validación de columnas**: Detección de columnas faltantes, manejo de END rows
+- ✅ **Auditoría de calidad**: Detección de valores negativos, celdas vacías, duplicados exactos
+- ✅ **Eliminación de duplicados**: Preservación de END rows, mantenimiento de primera ocurrencia
+- ✅ **Comparación de registros**: Detección de registros faltantes, filtrado de END rows, uso de identificadores únicos
+- ✅ **Manejo de edge cases**: DataFrames vacíos, valores None, columnas faltantes
+
+### Estructura de Tests
+
+```
+tests/
+├── __init__.py           # Paquete de tests
+├── conftest.py           # Fixtures compartidas (7 fixtures)
+├── test_loader.py        # Tests de carga y normalización (8 tests)
+├── test_validator.py     # Tests de validación y limpieza (11 tests)
+├── test_processor.py     # Tests de procesamiento (7 tests)
+└── README.md             # Documentación detallada de los tests
+```
+
+Para más información sobre los tests, consulta [`tests/README.md`](tests/README.md).

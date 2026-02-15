@@ -3,3 +3,4 @@ openpyxl
 thefuzz
 streamlit
 pytest
+pytest-cov
