@@ -88,8 +88,26 @@ El sistema compara los registros utilizando una clave compuesta: `[Nº Asiento, 
 
 ### 2. Categorización Inteligente
 Los nuevos registros se analizan comparándolos con los datos históricos. Si no se encuentra una coincidencia exacta para un "Concepto", el sistema utiliza el algoritmo `token_set_ratio` para encontrar la coincidencia más cercana.
-- **Confianza > 80%**: Asignación automática.
-- **Confianza < 80%**: Se asigna pero se resalta en **amarillo** en el Excel final para su verificación manual.
+
+**Niveles de Confianza:**
+- **Confianza = 100%**: Coincidencia exacta encontrada en el histórico.
+- **Confianza ≥ 70%**: Asignación automática basada en similitud alta.
+- **Confianza < 70%**: Se marca como **"NEW - NEEDS REVIEW"** y requiere revisión manual.
+
+**¿Qué significa "NEW - NEEDS REVIEW"?**
+Esta etiqueta se asigna cuando el sistema no puede clasificar automáticamente un gasto con suficiente confianza. Ocurre en dos casos:
+1. **No hay histórico de referencia**: El sistema no tiene datos previos para comparar.
+2. **Similitud baja**: El concepto nuevo no se parece lo suficiente (menos del 70%) a ningún concepto del histórico.
+
+**¿Por qué hay que revisarlos?**
+- El sistema no puede garantizar la categoría correcta con confianza.
+- Pueden ser nuevos tipos de gasto que no existen en el histórico.
+- Pueden requerir conocimiento del negocio que el sistema no tiene.
+- Una vez clasificados manualmente, pasan a formar parte del histórico y ayudan a clasificar futuros registros similares.
+
+**Indicadores Visuales:**
+- **Confianza < 80%**: Se resalta en **amarillo** en el Excel final para su verificación manual.
+- **"NEW - NEEDS REVIEW"**: Requiere revisión y clasificación manual obligatoria.
 
 ### 3. Inyección Inteligente en Excel
 A diferencia de las exportaciones estándar en CSV, esta herramienta:
@@ -133,6 +151,30 @@ Antes de procesar los datos, el sistema verifica que los archivos cargados conte
 
 - **En la Web**: Se muestra una alerta roja indicando las columnas faltantes.
 - **En la Terminal**: Se lanza un `ValueError` con el detalle del error de estructura.
+
+### Auditoría de Calidad de Datos
+El sistema realiza una auditoría automática de calidad de datos antes del procesamiento, detectando posibles problemas que podrían afectar la integridad del informe final. **El proceso continúa** incluso si se detectan estos problemas, pero se recomienda revisarlos.
+
+**Problemas Detectados:**
+
+1. **Valores Negativos en Debe/Haber**
+   - Detecta valores negativos en las columnas `Debe` o `Haber`.
+   - Indica las filas aproximadas donde se encuentran.
+   - **Ejemplo**: `[InputPL] Detectados 3 valores negativos en la columna 'Debe' (Filas Excel aprox: [5, 6, 115]...).`
+
+2. **Celdas Vacías en Columnas Críticas**
+   - Detecta celdas vacías en columnas críticas: `Concepto`, `Nº Asiento`, `Fecha`.
+   - Excluye automáticamente la fila `END` (marcador de fin de datos).
+   - **Ejemplo**: `[InputPL] Detectadas 1 celdas vacías en la columna crítica 'Fecha' (Filas Excel aprox: [201]...).`
+
+3. **Inconsistencias en Saldos**
+   - Detecta registros con el mismo `Nº Asiento` y `Fecha` pero diferente `Saldo`.
+   - Puede indicar duplicados con errores o inconsistencias en los datos.
+   - **Ejemplo**: `[Mayor] Detectadas 2 posibles inconsistencias: Registros con mismo Nº Asiento y Fecha pero diferente Saldo.`
+
+**Visualización:**
+- **En la Web**: Los avisos se muestran en un expandible "Avisos de Calidad de Datos" antes del procesamiento.
+- **En la Terminal**: Los avisos se imprimen en la consola como advertencias.
 
 ### Archivo de Prueba: `InputPL_error.xlsx`
 Se ha incluido el archivo `data/raw/InputPL_error.xlsx` específicamente para demostrar esta funcionalidad de robustez. 
