@@ -121,3 +121,20 @@ Ideal para procesamiento local y scripts de automatización.
 ```bash
 python3 main.py
 ```
+
+---
+
+## 🛡️ Robustez y Validación de Errores
+
+El proyecto incluye mecanismos para garantizar la integridad de los datos y facilitar la depuración por parte del usuario.
+
+### Validación de Estructura (Pre-vuelo)
+Antes de procesar los datos, el sistema verifica que los archivos cargados contengan todas las columnas requeridas definidas en la configuración. Si falta alguna columna, el proceso se detiene de forma segura.
+
+- **En la Web**: Se muestra una alerta roja indicando las columnas faltantes.
+- **En la Terminal**: Se lanza un `ValueError` con el detalle del error de estructura.
+
+### Archivo de Prueba: `InputPL_error.xlsx`
+Se ha incluido el archivo `data/raw/InputPL_error.xlsx` específicamente para demostrar esta funcionalidad de robustez. 
+- **Estado**: A este archivo se le ha eliminado deliberadamente la columna `Concepto`.
+- **Propósito**: Al intentar cargarlo, el sistema mostrará el error de validación, confirmando que la herramienta protege contra archivos mal formados que podrían corromper el informe final.
