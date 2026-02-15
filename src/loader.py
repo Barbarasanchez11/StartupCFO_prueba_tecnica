@@ -1,5 +1,17 @@
 import pandas as pd
-from src.config import INPUT_PL_FILE, MAYOR_FILE, COLUMN_MAPPING
+from src.config import INPUT_PL_FILE, MAYOR_FILE, COLUMN_MAPPING, INPUT_PL_COLS, UNIQUE_IDENTIFIERS
+
+def validate_columns(df, required_cols, file_label):
+    """
+    Checks if all required columns are present in the DataFrame.
+    Raises ValueError if columns are missing.
+    """
+    # Excluyo 'END' porque es un marcador de fila, no una columna real que pandas lea siempre
+    cols_to_check = [c for c in required_cols if c != "END"]
+    missing = [col for col in cols_to_check if col not in df.columns]
+    
+    if missing:
+        raise ValueError(f"Error de Estructura en {file_label}: Faltan las columnas: {', '.join(missing)}")
 
 def load_data(file_source):
     """
@@ -68,11 +80,24 @@ def get_prepared_data(input_source=INPUT_PL_FILE, mayor_source=MAYOR_FILE):
     """
     Main function to load and prepare both datasets.
     Accepts paths or file-like objects.
+    Raises ValueError if validation fails.
     """
+    # 1. Cargar datos brutos
     input_df = load_data(input_source)
-    input_df = normalize_data(input_df, is_mayor=False)
-    
     mayor_df = load_data(mayor_source)
+
+    if input_df is None or mayor_df is None:
+        raise ValueError("No se pudieron cargar los archivos seleccionados.")
+
+    # 2. Validar estructura del InputPL (todas las columnas definidas)
+    validate_columns(input_df, INPUT_PL_COLS, "InputPL")
+
+    # 3. Normalizar
+    input_df = normalize_data(input_df, is_mayor=False)
     mayor_df = normalize_data(mayor_df, is_mayor=True)
+
+    # 4. Validar estructura del Mayor (identificadores únicos y concepto)
+    mayor_required = UNIQUE_IDENTIFIERS + ["Concepto"]
+    validate_columns(mayor_df, mayor_required, "Mayor")
     
     return input_df, mayor_df

@@ -68,7 +68,11 @@ if st.button(" Ejecutar Proceso"):
         
         # 1. Carga y Normalización
         status.info(" Paso 1: Cargando y normalizando datos...")
-        input_df, mayor_df = get_prepared_data(input_file, mayor_file)
+        try:
+            input_df, mayor_df = get_prepared_data(input_file, mayor_file)
+        except ValueError as e:
+            status.error(str(e))
+            st.stop()
         
         if input_df is not None and mayor_df is not None:
             
