@@ -13,7 +13,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
         return
 
     # 1. Abro el Excel original que me sirve de plantilla
-    # 🔧 FIX: Usar data_only=True para leer solo valores mostrados (no fórmulas)
+
     print(f"[INFO] Opening template: {template_path}")
     wb = openpyxl.load_workbook(template_path, data_only=True, keep_vba=False)
     sheet = wb.active
@@ -34,7 +34,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
     else:
         print(f"[INFO] Found 'END' at row {end_row}. Inserting {len(classified_df)} rows...")
     
-    # 🔧 FIX: Si tenemos input_df, reescribir las filas existentes para corregir valores corruptos
+   
     if input_df is not None and end_row > 2:  # end_row > 2 porque fila 1 es header
         print(f"[INFO] Fixing existing rows (1 to {end_row-1}) from normalized DataFrame...")
         # Reescribir filas existentes desde el DataFrame normalizado (que tiene valores correctos)
@@ -51,7 +51,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
                         cell.value = cell_value.to_pydatetime()
                         cell.number_format = 'DD/MM/YYYY'
                     elif col_name == 'Mes':
-                        # 🔧 FIX CRÍTICO: Formato texto también para filas existentes
+                      
                         cell.number_format = '@'
                         cell.value = str(cell_value) if cell_value else ""
                     elif col_name in ['Debe', 'Haber', 'Saldo', 'Neto']:
@@ -60,7 +60,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
                     else:
                         cell.value = cell_value
 
-    # 3. 🔧 FIX: Insertar filas pero preservar formatos existentes
+   
     # Primero, desplazamos la fila END hacia abajo insertando filas vacías
     sheet.insert_rows(end_row, amount=len(classified_df))
 
@@ -80,7 +80,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
                 if col_name == 'Fecha' and hasattr(cell_value, 'to_pydatetime'):
                     cell_value = cell_value.to_pydatetime()
                 
-                # 🔧 FIX: Obtener la celda y establecer valor y formato SOLO para nuevas filas
+            
                 cell = sheet.cell(row=current_row, column=col_idx)
                 
                 # Formateo específico según el tipo de columna (SOLO para nuevas filas)
@@ -89,7 +89,7 @@ def save_to_excel(classified_df, template_path, input_df=None):
                     cell.number_format = 'DD/MM/YYYY'
                 
                 elif col_name == 'Mes':
-                    # 🔧 FIX CRÍTICO: Formato texto para evitar interpretación como fecha
+                    
                     # Excel interpreta "abr/25" como fecha, necesitamos forzar texto
                     # IMPORTANTE: Solo aplicamos esto a las NUEVAS celdas, no tocamos las existentes
                     cell.number_format = '@'  # @ es el código de formato texto en Excel

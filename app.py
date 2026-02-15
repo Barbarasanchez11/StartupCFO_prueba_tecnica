@@ -104,7 +104,7 @@ if st.button(" Ejecutar Proceso"):
                 # 4. Escritura
                 status.info(" Paso 4: Generando archivo Excel con formato...")
                 # Usamos el archivo de entrada como plantilla directamente
-                # 🔧 FIX: Pasamos también input_df para corregir valores corruptos en filas existentes
+               
                 save_to_excel(classified_df, input_file, input_df=input_df)
                 
                 status.success(" ¡Todo listo! El histórico ha sido actualizado.")
