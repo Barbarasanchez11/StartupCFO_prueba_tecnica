@@ -3,8 +3,8 @@ from src.config import UNIQUE_IDENTIFIERS
 
 def audit_data_quality(df, file_label):
     """
-    Realiza una auditoría sobre el DataFrame para encontrar posibles problemas de calidad.
-    Retorna una lista de mensajes de advertencia.
+    Performs a data quality audit on the DataFrame to find potential quality issues.
+    Returns a list of warning messages.
     """
     warnings = []
     
@@ -71,18 +71,18 @@ def audit_data_quality(df, file_label):
 
 def remove_exact_duplicates(df, file_label):
     """
-    Elimina duplicados exactos (mismo Nº Asiento, Fecha y Saldo) del DataFrame.
-    Mantiene solo la primera ocurrencia de cada grupo de duplicados.
+    Removes exact duplicates (same Nº Asiento, Fecha and Saldo) from the DataFrame.
+    Keeps only the first occurrence of each duplicate group.
     
     Args:
-        df: DataFrame a limpiar
-        file_label: Etiqueta del archivo para mensajes informativos
+        df: DataFrame to clean
+        file_label: File label for informative messages
     
     Returns:
         tuple: (df_cleaned, removed_count, summary_message)
-            - df_cleaned: DataFrame sin duplicados
-            - removed_count: Número de filas eliminadas
-            - summary_message: Mensaje resumen de lo eliminado
+            - df_cleaned: DataFrame without duplicates
+            - removed_count: Number of rows removed
+            - summary_message: Summary message of what was removed
     """
     if df is None or df.empty:
         return df, 0, ""
