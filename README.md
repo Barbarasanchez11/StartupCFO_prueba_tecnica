@@ -4,7 +4,7 @@ Este proyecto resuelve un desafío real de contabilidad para **The Startup CFO**
 
 ## 🏢 Visión General del Proyecto
 
-La herramienta automatiza la detección de registros contables faltantes y utiliza **Lógica Difusa (Fuzzy Logic)** basada en IA para sugerir categorías de gastos, reduciendo significativamente el esfuerzo manual mientras se mantiene la alta calidad en los formatos de los informes.
+La herramienta automatiza la detección de registros contables faltantes y utiliza **Lógica Difusa (Fuzzy Logic)** mediante coincidencia de texto para sugerir categorías de gastos, reduciendo significativamente el esfuerzo manual mientras se mantiene la alta calidad en los formatos de los informes.
 
 ### 📋 Requisitos Técnicos Clave
 - **Python**: 3.11+
@@ -70,7 +70,7 @@ StartupCFO_prueba_tecnica/
 ├── main.py             # Punto de entrada de la CLI (Terminal)
 ├── requirements.txt    # Dependencias del proyecto
 ├── src/
-│   ├── classifier.py   # Lógica de clasificación por IA (Fuzzy Logic)
+│   ├── classifier.py   # Lógica de clasificación por Fuzzy Logic (coincidencia de texto)
 │   ├── config.py       # Configuraciones globales y mapeos
 │   ├── loader.py       # Carga de datos y normalización (Ruta/Buffer)
 │   ├── logger.py       # Sistema de logging con colores para terminal
@@ -90,7 +90,7 @@ StartupCFO_prueba_tecnica/
 El sistema compara los registros utilizando una clave compuesta: `[Nº Asiento, Fecha, Saldo]`. Esto asegura que incluso si las descripciones cambian ligeramente, la misma transacción no se duplica si ya existe en el histórico.
 
 ### 2. Categorización Inteligente
-Los nuevos registros se analizan comparándolos con los datos históricos. Si no se encuentra una coincidencia exacta para un "Concepto", el sistema utiliza el algoritmo `token_set_ratio` para encontrar la coincidencia más cercana.
+Los nuevos registros se analizan comparándolos con los datos históricos. Si no se encuentra una coincidencia exacta para un "Concepto", el sistema utiliza **Fuzzy String Matching** (algoritmo `token_set_ratio` de la librería TheFuzz) para encontrar la coincidencia más cercana basada en similitud de texto.
 
 **Niveles de Confianza:**
 - **Confianza = 100%**: Coincidencia exacta encontrada en el histórico.
@@ -363,7 +363,7 @@ A continuación se listan posibles mejoras que podrían implementarse en el futu
 
 2. **Mejora del algoritmo de clasificación**
    - Experimentar con embeddings de texto (Word2Vec, FastText) para mejor comprensión semántica
-   - Implementar un modelo de clasificación simple (Naive Bayes o SVM) entrenado con el histórico
+   - Implementar un modelo de Machine Learning simple (Naive Bayes o SVM) entrenado con el histórico para clasificación automática
 
 3. **Detección de duplicados avanzada**
    - Implementar detección de duplicados "casi exactos" (mismo concepto pero fechas ligeramente diferentes)
@@ -418,3 +418,13 @@ A continuación se listan posibles mejoras que podrían implementarse en el futu
 ---
 
 **Nota**: Estas mejoras son sugerencias para futuras iteraciones. La solución actual es funcional y completa para el caso de uso descrito en el briefing.
+
+---
+
+## 📋 Gestión del Proyecto
+
+Este proyecto fue organizado y gestionado utilizando **Trello** para el seguimiento de tareas y funcionalidades:
+
+🔗 **[Tablero de Trello - The Startup CFO](https://trello.com/b/1zPDz7l9/thestartupcfo)**
+
+El tablero incluye la planificación de tareas, seguimiento de features implementadas, y organización del trabajo durante el desarrollo del proyecto.
